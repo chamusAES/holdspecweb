@@ -1,0 +1,789 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>HoldSpec</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: Vision theme (spec v1.0, 2026-09-30). Indigo field with four soft light sources; frosted glass cards; electric blue = commissioning, mint = fault detection; every machine fact in IBM Plex Mono. Single deliberate dark look. */
+:root{
+  color-scheme:dark;
+  --page:linear-gradient(160deg,#0B0F33 0%,#070B24 45%,#03051A 100%);
+  --ink-0:#03051A;--ink-1:#070B24;--ink-2:#0F1535;--ink-3:#1A1F47;--ink-4:#242B5A;
+  --text:#FFFFFF;--muted:#A0AEC0;--dim:#6C7A94;
+  --acx:#0075FF;--acx-2:#21D4FD;
+  --acx-grad:linear-gradient(90deg,#0075FF,#21D4FD);
+  --acx-glow:0 6px 18px #0075FF55;
+  --acx-wash:linear-gradient(135deg,#0075FF40,#21D4FD18);
+  --acx-edge:#63B3FF88;
+  --fdd:#2DD4BF;--fdd-grad:linear-gradient(90deg,#0F8C7E,#2DD4BF);
+  --fdd-wash:linear-gradient(135deg,#2DD4BF22,#FFFFFF06);--fdd-edge:#2DD4BF55;--fdd-ink:#031A17;
+  --pass:#01B574;--fail:#E8455A;--inc:#F5B73D;--blocked:#A78BFA;--abort:#D46FB0;--fault:#E39B5C;
+  --a05:#FFFFFF05;--a0a:#FFFFFF0A;--a10:#FFFFFF10;--a14:#FFFFFF14;--a18:#FFFFFF18;--a1c:#FFFFFF1C;--a22:#FFFFFF22;--a2e:#FFFFFF2E;
+  --line-solid:#2A3160;
+  --s-bg:#0A0F2E;--s-cell:#1A1F47;--s-line:#242B5A;--s-dim:#6C7A94;--s-fail:#E8455A;
+  --card-blur:blur(26px) saturate(160%);
+  --display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --body:"Archivo",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,Consolas,monospace;
+  --gut:24px;--max:1560px;
+}
+@media (max-width:600px){:root{--gut:16px}}
+@media (prefers-reduced-transparency:reduce){:root{--card-blur:none}}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background-color:var(--ink-1);background-image:var(--page);background-attachment:fixed;color:var(--text);font-family:var(--body);font-size:17px;line-height:1.55;-webkit-font-smoothing:antialiased;overflow-x:hidden;position:relative}
+a{color:inherit}
+:focus-visible{outline:2px solid var(--acx);outline-offset:2px}
+.wrap{max-width:var(--max);margin-inline:auto;padding-inline:var(--gut)}
+.mono{font-family:var(--mono)}
+
+/* light sources */
+.field{position:fixed;inset:0;z-index:-1;overflow:hidden;pointer-events:none}
+.field i{position:absolute;border-radius:50%;filter:blur(80px);will-change:transform}
+.field .o1{width:720px;height:720px;left:-260px;top:-300px;background:#0075FF;opacity:.5;animation:drift1 52s ease-in-out infinite alternate}
+.field .o2{width:640px;height:640px;right:-140px;top:160px;background:#21D4FD;opacity:.4;animation:drift2 46s ease-in-out infinite alternate}
+.field .o3{width:560px;height:560px;left:38%;bottom:-260px;background:#7B5CFF;opacity:.55;animation:drift1 58s ease-in-out infinite alternate-reverse}
+.field .o4{width:420px;height:420px;left:14%;top:52%;background:#2DD4BF;opacity:.3;animation:drift2 42s ease-in-out infinite alternate-reverse}
+@keyframes drift1{to{transform:translate(60px,40px)}}
+@keyframes drift2{to{transform:translate(-50px,50px)}}
+
+.eyebrow{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase;color:var(--dim)}
+.eyebrow.acx{color:var(--acx-2)}.eyebrow.fdd{color:var(--fdd)}
+h1,h2,h3{font-family:var(--display);text-wrap:balance;margin:0}
+h2{font-size:32px;line-height:1.12;font-weight:700;letter-spacing:-.01em;font-stretch:88%}
+h3{font-size:19px;font-weight:700;line-height:1.2;letter-spacing:-.005em}
+p{margin:0}
+.lede{font-size:17px;color:var(--muted);max-width:62ch}
+.glow{background:var(--acx-grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+
+/* glass */
+.glass,.card,.prod,.stage,.vpanel,.vlist,.proc,.tile,form,.safety,.nav{position:relative}
+.card,.stage,.vpanel,.vlist,.safety,.prod,.tile,form{background:linear-gradient(135deg,#0F153599 0%,#0F153566 100%);border:1px solid var(--a22);border-radius:18px;box-shadow:0 10px 32px #00000055,inset 0 1px 0 var(--a2e);backdrop-filter:var(--card-blur);-webkit-backdrop-filter:var(--card-blur);overflow:hidden}
+.card::before,.stage::before,.vpanel::before,.vlist::before,.safety::before,.prod::before,.tile::before,form::before{content:"";position:absolute;inset:0;background:linear-gradient(180deg,#FFFFFF10,transparent 40%);pointer-events:none;border-radius:inherit}
+@media (prefers-reduced-transparency:reduce){.card,.stage,.vpanel,.vlist,.safety,.prod,.tile,form{background:#0F1535EB}}
+
+/* buttons + pills */
+.btn{display:inline-flex;align-items:center;gap:10px;font:600 15px/1 var(--body);padding:14px 20px;border-radius:14px;text-decoration:none;border:1px solid transparent;cursor:pointer;transition:filter .15s,transform .1s}
+.btn-hot{background:var(--acx-grad);color:#fff;box-shadow:var(--acx-glow);border:0}
+.btn-hot:hover{filter:brightness(1.08)}
+.btn-hot:active{transform:translateY(1px)}
+.btn-ghost{background:var(--a10);border-color:var(--a22);color:#fff}
+.btn-ghost:hover{background:var(--a14)}
+.v{display:inline-block;font-family:var(--mono);font-size:11px;font-weight:600;letter-spacing:.04em;padding:2px 8px;border-radius:8px;background:var(--pc,var(--ink-4));color:#fff;white-space:nowrap}
+.v-pass{--pc:var(--pass)}.v-fail{--pc:var(--fail)}.v-inc{--pc:var(--inc);color:#1B1300}.v-blk{--pc:var(--blocked);color:#140B2E}.v-abt{--pc:var(--abort)}
+.v.wait{--pc:var(--blocked);color:#140B2E}
+.pill{display:inline-flex;align-items:center;gap:8px;font-size:12.5px;font-weight:500;padding:7px 14px;border-radius:999px;background:var(--a10);border:1px solid var(--a22);color:var(--muted);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--pass);box-shadow:0 0 0 3px #01B57433}
+
+/* nav */
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:50;background:#070B2499;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border-bottom:1px solid #FFFFFF12}
+.nav .wrap{display:flex;align-items:center;gap:24px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;text-decoration:none;font-weight:700;font-size:19px;letter-spacing:-.01em}
+.brand small{font-family:var(--mono);font-weight:500;font-size:11px;color:var(--dim);letter-spacing:.08em}
+.nav ul{display:flex;gap:6px;list-style:none;margin:0 0 0 auto;padding:0;font-size:13.5px;color:var(--muted)}
+.nav ul a{text-decoration:none;padding:8px 12px;border-radius:14px;display:block}
+.nav ul a:hover{background:var(--a14);color:#fff}
+.nav .btn{padding:10px 16px;font-size:13.5px}
+@media (max-width:900px){.nav ul{display:none}.nav .btn{margin-left:auto}}
+
+.brand .lockup{height:24px;width:auto;display:block;color:#fff}
+.hs-mark{height:1.35em;width:auto;display:inline-block;vertical-align:-.3em;margin-right:8px;color:#fff}
+.foot-brand{display:flex;align-items:center;gap:16px;flex-wrap:wrap;color:var(--muted)}
+.foot-brand .lockup{height:20px;width:auto;color:#fff}
+footer .wrap{align-items:center}
+/* hero */
+.hero .wrap{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,64px);align-items:center;padding-block:clamp(48px,7vw,104px) clamp(40px,6vw,80px)}
+.hero h1{font-size:clamp(40px,5.2vw,72px);line-height:1.05;font-weight:700;letter-spacing:-.02em;font-stretch:88%;margin-block:20px 22px}
+.hero .ctas{display:flex;flex-wrap:wrap;gap:12px;margin-top:30px}
+.stage{border-radius:22px;max-width:100%}
+.stage-bar{display:flex;align-items:center;gap:10px;padding:13px 18px;border-bottom:1px solid var(--a1c);font-size:12.5px;color:var(--muted)}
+.stage-bar b{color:#fff;font-weight:600}
+.stage-bar .live{margin-left:auto;display:flex;align-items:center;gap:6px;font-family:var(--mono);font-size:11px;font-weight:600;color:var(--pass)}
+#elev{display:block;width:100%;aspect-ratio:16/10.5;max-width:100%}
+.readout{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0 14px 14px}
+.readout div{padding:10px 12px;min-width:0;background:var(--a0a);border:1px solid var(--a18);border-radius:14px}
+.readout span{display:block;font-size:12px;color:var(--muted)}
+.readout strong{font-family:var(--mono);font-size:22px;font-weight:600;font-variant-numeric:tabular-nums}
+.readout .bad{color:var(--fail)}
+.ticker{height:36px;overflow:hidden;border-top:1px solid var(--a1c);font-size:12.5px;color:var(--muted)}
+.ticker ul{list-style:none;margin:0;padding:0 18px;display:flex;flex-direction:column}
+.ticker li{height:36px;display:flex;align-items:center;gap:10px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ticker li span:nth-child(2){font-family:var(--mono);color:#fff;font-weight:500}
+@media (max-width:980px){.hero .wrap{grid-template-columns:minmax(0,1fr)}}
+
+/* facts band */
+.facts{background:#070B2499;border-block:1px solid var(--a10)}
+.facts .wrap{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px;padding-block:22px}
+.fact{padding:18px;display:flex;flex-direction:column;gap:6px;min-width:0;background:var(--a0a);border:1px solid var(--a18);border-radius:18px}
+.fact b{font-family:var(--mono);font-weight:600;font-size:clamp(28px,3vw,38px);line-height:1;font-variant-numeric:tabular-nums}
+.fact span{color:var(--muted);font-size:14px}
+@media (max-width:760px){.facts .wrap{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+section{padding-block:clamp(64px,8vw,112px)}
+.band{background:#070B2499;border-block:1px solid var(--a10)}
+.sec-head{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:32px;align-items:end;margin-bottom:40px}
+.sec-head .eyebrow{display:block;margin-bottom:12px}
+@media (max-width:860px){.sec-head{grid-template-columns:minmax(0,1fr)}}
+
+/* products */
+.duo{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px}
+.prod{padding:clamp(22px,2.6vw,34px);display:flex;flex-direction:column;gap:16px;min-width:0;border-radius:22px}
+.prod.cx{background:var(--acx-wash),linear-gradient(135deg,#0F153599,#0F153566);border-color:var(--acx-edge)}
+.prod.fd{background:var(--fdd-wash),linear-gradient(135deg,#0F153599,#0F153566);border-color:var(--fdd-edge)}
+.prod .tag{font-size:11px;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+.prod.cx .tag{color:var(--acx-2)}.prod.fd .tag{color:var(--fdd)}
+.prod h3{font-size:clamp(26px,2.6vw,34px);letter-spacing:-.015em;font-stretch:88%}
+.prod .sub{color:var(--muted)}
+.prod ul{list-style:none;padding:0;margin:4px 0 0;display:grid;gap:10px}
+.prod li{display:grid;grid-template-columns:28px minmax(0,1fr);gap:12px;align-items:start;padding:12px;background:var(--a0a);border:1px solid var(--a18);border-radius:14px;color:var(--muted);font-size:15.5px}
+.prod li::before{content:"";width:28px;height:28px;border-radius:10px;background:var(--acx-grad);box-shadow:var(--acx-glow)}
+.prod.fd li::before{background:var(--fdd-grad);box-shadow:none}
+.prod li b{color:#fff;font-weight:600}
+.prod .who{margin-top:auto;padding-top:14px;border-top:1px solid var(--a1c);font-size:12.5px;color:var(--muted)}
+@media (max-width:860px){.duo{grid-template-columns:minmax(0,1fr)}}
+
+/* process */
+.proc{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:14px}
+.step{padding:18px;min-width:0;display:flex;flex-direction:column;gap:10px;background:var(--a0a);border:1px solid var(--a18);border-radius:14px;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.step .n{display:flex;align-items:center;gap:10px}
+.step .n b{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--ink-3);font-family:var(--mono);font-size:12px;font-weight:600;transition:background .4s}
+.proc.run .step .n b{background:var(--acx-grad);transition-delay:calc(var(--i) * .5s + .5s)}
+.step .n small{font-size:10.5px;font-weight:600;letter-spacing:.12em;color:var(--dim)}
+.step h3{font-size:17px}
+.step p{color:var(--muted);font-size:14.5px}
+.step .rail{height:6px;border-radius:6px;background:var(--a18);overflow:hidden;margin-top:auto}
+.step .rail i{display:block;height:100%;width:0;background:var(--acx-grad);border-radius:6px}
+.proc.run .step .rail i{animation:fill .9s cubic-bezier(.5,0,.2,1) forwards;animation-delay:calc(var(--i) * .5s)}
+@keyframes fill{to{width:100%}}
+@media (max-width:1060px){.proc{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:620px){.proc{grid-template-columns:minmax(0,1fr)}}
+
+/* verdicts */
+.verdicts{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:16px;align-items:start}
+.vlist{display:grid;gap:8px;padding:12px}
+.vbtn{all:unset;box-sizing:border-box;cursor:pointer;display:grid;grid-template-columns:130px minmax(0,1fr);gap:14px;align-items:center;padding:13px 14px;border-radius:14px;border:1px solid var(--a18);background:var(--a0a);position:relative;z-index:1}
+.vbtn:hover{background:var(--a14)}
+.vbtn[aria-pressed="true"]{background:var(--acx-wash);border-color:var(--acx-edge)}
+.vbtn:focus-visible{outline:2px solid var(--acx);outline-offset:2px}
+.vbtn .v{justify-self:start;--pc:var(--vc)}
+.vbtn span.t{color:#fff;font-size:15px}
+.vpanel{position:sticky;top:84px;padding:clamp(22px,3vw,34px);min-height:340px;display:flex;flex-direction:column;gap:16px}
+.vpanel .big{font-family:var(--mono);font-weight:600;font-size:clamp(36px,4.6vw,60px);line-height:1;letter-spacing:-.02em;color:var(--vc);overflow-wrap:anywhere}
+.vpanel p{color:var(--muted);max-width:52ch}
+.vpanel .lead{color:#fff;font-size:20px;font-weight:600}
+.vpanel .ex{font-family:var(--mono);font-size:13px;padding:12px 14px;border-radius:14px;background:var(--a0a);border:1px solid var(--a18);color:#fff;overflow-x:auto}
+.vpanel .ex span{color:var(--dim)}
+@media (max-width:860px){.verdicts{grid-template-columns:minmax(0,1fr)}.vpanel{position:relative;top:0}.vbtn{grid-template-columns:minmax(0,1fr);gap:8px}}
+
+/* cards */
+.card{min-width:0}
+.card-h{display:flex;flex-wrap:wrap;align-items:center;gap:8px 12px;padding:14px 18px;border-bottom:1px solid var(--a1c);font-size:13px;color:var(--muted)}
+.card-h b{color:#fff;font-weight:700;font-size:15px}
+.card-h .mono{color:#fff}
+.card-h .ex-tag{margin-left:auto;font-size:10.5px;font-weight:600;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);background:var(--a10);border:1px solid var(--a22);padding:3px 10px;border-radius:10px}
+.evidence{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,1fr);gap:16px}
+.chart-wrap{padding:16px 18px 6px;overflow-x:auto}
+.chart-wrap svg{display:block;width:100%;min-width:420px;height:auto}
+.kv{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;padding:0 16px 16px}
+.kv div{padding:10px 12px;min-width:0;background:var(--a0a);border:1px solid var(--a18);border-radius:14px}
+.kv span{display:block;font-size:12px;color:var(--muted)}
+.kv strong{font-family:var(--mono);font-weight:600;font-size:14px;overflow-wrap:anywhere}
+.kv .bad{color:var(--fail)}
+.bundle{padding:16px;display:grid;gap:8px}
+.file{display:grid;grid-template-columns:26px minmax(0,1fr) auto;gap:12px;align-items:center;padding:9px 12px;background:var(--a0a);border:1px solid var(--a18);border-radius:14px;font-family:var(--mono);font-size:12.5px}
+.file i{width:26px;height:26px;border-radius:9px;background:var(--ink-3);position:relative}
+.file i::after{content:"";position:absolute;left:8px;top:7px;width:10px;height:12px;border:1.5px solid var(--acx-2);border-radius:2px}
+.file span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.file em{font-style:normal;color:var(--dim)}
+.seal{margin:0 16px 16px;padding:12px 14px;border-radius:14px;background:#01B57414;border:1px solid #01B57455;font-family:var(--mono);font-size:12px;color:var(--muted);overflow-wrap:anywhere}
+.seal b{color:var(--pass);font-weight:600}
+@media (max-width:980px){.evidence{grid-template-columns:minmax(0,1fr)}}
+
+/* portfolio (FDD door, mint) */
+.campus-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:16px;align-items:start}
+.campus{padding:16px;display:grid;gap:14px}
+.bldg{display:grid;gap:8px;padding:12px;background:var(--a0a);border:1px solid var(--a18);border-radius:14px}
+.bldg-h{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:13px;color:var(--muted)}
+.bldg-h b{color:#fff;font-weight:700}
+.bldg-h > span{font-family:var(--mono);font-size:12px}
+.floors{display:grid;gap:5px}
+.floor{display:grid;grid-template-columns:34px minmax(0,1fr);gap:8px;align-items:center}
+.floor>span{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.units{display:grid;grid-template-columns:repeat(auto-fill,minmax(22px,1fr));gap:5px}
+.u{all:unset;box-sizing:border-box;height:24px;border-radius:7px;background:#2DD4BF26;border:1px solid var(--fdd-edge);cursor:pointer;transition:transform .12s}
+.u:hover,.u:focus-visible{transform:scale(1.15);z-index:1}
+.u:focus-visible{outline:2px solid var(--fdd);outline-offset:2px}
+.u.warn{background:var(--inc);border-color:var(--inc)}
+.u.crit{background:var(--fail);border-color:var(--fail)}
+.u.off{background:transparent;border:1px dashed var(--a22)}
+.u.sel{box-shadow:0 0 0 2px var(--ink-1),0 0 0 4px #fff}
+.legend{display:flex;flex-wrap:wrap;gap:14px;font-size:12.5px;color:var(--muted);padding:0 18px 16px}
+.legend i{display:inline-block;width:13px;height:13px;border-radius:4px;vertical-align:-2px;margin-right:6px}
+.lg.ok{background:#2DD4BF26;border:1px solid var(--fdd-edge)}.lg.warn{background:var(--inc)}.lg.crit{background:var(--fail)}.lg.off{border:1px dashed var(--a22)}
+.docket{padding:20px;display:flex;flex-direction:column;gap:14px}
+.docket .sev{align-self:flex-start}
+.docket h3{font-size:24px;font-stretch:88%}
+.docket .do{padding:12px 14px;background:var(--fdd-wash);border:1px solid var(--fdd-edge);border-radius:14px;font-size:15px}
+.docket .do b{font-size:10.5px;font-weight:600;letter-spacing:.12em;display:block;margin-bottom:4px;color:var(--fdd)}
+.docket dl{display:grid;grid-template-columns:auto minmax(0,1fr);gap:8px 16px;margin:0;font-size:14px}
+.docket dt{font-size:11px;font-weight:600;color:var(--dim);text-transform:uppercase;letter-spacing:.08em;padding-top:2px}
+.docket dd{margin:0;overflow-wrap:anywhere}
+.docket dd.mono{font-weight:600}
+.spark{width:100%;height:72px;display:block;background:var(--a0a);border:1px solid var(--a18);border-radius:14px}
+@media (max-width:980px){.campus-grid{grid-template-columns:minmax(0,1fr)}}
+
+/* bento */
+.bento{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:16px}
+.tile{padding:22px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.tile p{color:var(--muted);font-size:15px}
+.tile.w3{grid-column:span 3}.tile.w2{grid-column:span 2}.tile.w4{grid-column:span 4}
+.tile .k{font-size:11px;font-weight:600;color:var(--dim);letter-spacing:.12em;text-transform:uppercase}
+.tile .k.acx{color:var(--acx-2)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:auto;position:relative}
+.chip{font-family:var(--mono);font-size:12px;font-weight:500;padding:6px 10px;border-radius:12px;background:var(--a10);border:1px solid var(--a22)}
+.checklist{display:grid;gap:8px;margin-top:4px;position:relative}
+.ci{display:grid;grid-template-columns:auto minmax(0,1fr) auto;gap:12px;align-items:center;padding:10px 12px;background:var(--a0a);border:1px solid var(--a18);border-radius:14px;font-size:14px}
+.ci .src{font-family:var(--mono);font-size:10.5px;font-weight:600;padding:2px 8px;border-radius:8px;background:var(--ink-4);color:var(--muted)}
+.ci .src.auto{background:var(--acx);color:#fff}
+@media (max-width:980px){.tile.w3,.tile.w2,.tile.w4{grid-column:span 6}}
+
+/* safety */
+.safety{padding:clamp(24px,4vw,52px);display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:center;border-radius:22px}
+.safety > *{position:relative}
+.lease{display:grid;gap:10px}
+.lrow{display:grid;grid-template-columns:110px minmax(0,1fr);gap:14px;align-items:center;font-family:var(--mono);font-size:12.5px}
+.lrow > span{color:var(--muted)}
+.lbar{height:32px;border-radius:10px;background:var(--a0a);border:1px solid var(--a18);position:relative;overflow:hidden}
+.lbar i{position:absolute;top:3px;bottom:3px;border-radius:8px;display:flex;align-items:center;padding-left:10px;font-style:normal;font-size:11px;font-weight:600;color:#fff;white-space:nowrap;overflow:hidden;background:var(--acx-grad)}
+.lbar i.hatch{background:var(--acx)}
+.lbar i.ok{background:var(--pass)}
+.axis{font-size:11px;color:var(--dim);display:flex;justify-content:space-between}
+@media (max-width:860px){.safety{grid-template-columns:minmax(0,1fr)}.lrow{grid-template-columns:minmax(0,1fr);gap:4px}}
+
+/* cta */
+.cta{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:clamp(24px,4vw,56px);align-items:start}
+.cta h2{font-size:clamp(34px,4.4vw,56px);line-height:1.05;letter-spacing:-.02em}
+form{display:grid;gap:12px;padding:22px;background:#FFFFFF14}
+form > *{position:relative}
+label{font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:grid;gap:6px}
+input,select{font:400 15px var(--body);color:#fff;background:var(--ink-2);border:1px solid var(--a22);border-radius:14px;padding:12px 14px;width:100%;text-transform:none;letter-spacing:0}
+input::placeholder{color:var(--dim)}
+.formnote{font-size:13px;color:var(--muted);min-height:1.4em}
+.formnote.bad{color:var(--fail)}
+@media (max-width:860px){.cta{grid-template-columns:minmax(0,1fr)}}
+
+footer{background:#03051ACC;color:var(--dim);padding-block:26px;font-size:13px;border-top:1px solid var(--a10)}
+footer .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+
+.rise{animation:rise .7s cubic-bezier(.2,.7,.2,1) both}
+.rise.d1{animation-delay:.06s}.rise.d2{animation-delay:.12s}.rise.d3{animation-delay:.18s}.rise.d4{animation-delay:.26s}
+@keyframes rise{from{transform:translateY(12px)}to{transform:none}}
+.up{transition:transform .7s cubic-bezier(.2,.7,.2,1)}
+.up.pre{transform:translateY(12px)}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}html{scroll-behavior:auto}.proc .step .rail i{width:100%}.up.pre{transform:none}}
+</style>
+
+<div class="field" aria-hidden="true"><i class="o1"></i><i class="o2"></i><i class="o3"></i><i class="o4"></i></div>
+<nav class="nav" aria-label="Primary">
+  <div class="wrap">
+    <a class="brand" href="#top" aria-label="HoldSpec by AES, home"><svg class="lockup" viewBox="58 46 4400 666" role="img" aria-label="HoldSpec" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0.000000,700.000000) scale(0.100000,-0.100000)"><path fill="currentColor" d="M777 6516 c-57 -21 -103 -64 -137 -128 -31 -58 -31 -5596 -1 -5656 23 -44 73 -97 116 -120 27 -15 83 -17 545 -17 l515 0 41 27 c53 34 98 89 113 137 7 26 11 165 11 430 l0 391 310 0 310 0 -2 188 -3 187 -305 2 -305 2 -7 801 c-3 440 -3 1160 0 1600 l7 801 305 2 305 2 3 188 2 187 -310 0 -310 0 0 391 c0 265 -4 404 -11 430 -15 48 -60 103 -113 137 l-41 27 -500 2 c-407 2 -507 0 -538 -11z M4880 6521 c-71 -18 -148 -91 -168 -160 -8 -26 -12 -162 -12 -430 l0 -391 -310 0 -310 0 2 -187 3 -188 305 -1 305 -2 2 -587 c2 -323 5 -590 8 -593 3 -3 5 -193 5 -422 0 -229 -2 -419 -5 -422 -3 -3 -6 -270 -8 -593 l-2 -587 -305 -2 -305 -1 -3 -187 -2 -188 310 0 310 0 0 -391 c0 -265 4 -404 11 -430 15 -48 60 -103 113 -137 l41 -27 515 0 c462 0 518 2 545 17 43 23 93 76 116 120 30 59 30 5597 0 5656 -23 44 -73 97 -116 120 -27 15 -84 17 -525 18 -272 1 -506 -1 -520 -5z"/><path fill="#3D9BFF" d="M1990 3971 c-14 -27 -14 -795 0 -822 10 -18 28 -19 669 -19 l658 0 11 25 c17 36 17 774 0 810 l-11 25 -658 0 c-641 0 -659 -1 -669 -19z"/><path fill="#2DD4C0" d="M3333 3982 c-8 -5 -9 -13 -3 -22 6 -9 10 -179 10 -400 0 -221 -4 -391 -10 -400 -6 -9 -5 -17 3 -22 19 -12 1325 -10 1347 2 30 16 30 824 0 840 -22 12 -1328 14 -1347 2z"/></g><g transform="translate(960,0)"><g transform="translate(0.000000,880.000000) scale(0.100000,-0.100000)"><path fill="currentColor" d="M10700 5540 l0 -2520 515 0 515 0 -6 2508 c-3 1379 -7 2513 -10 2520 -3 9 -113 12 -509 12 l-505 0 0 -2520z M15212 8040 c-9 -15 -12 -215 -12 -882 0 -475 0 -871 0 -880 0 -42 -50 -9 -116 77 -15 20 -62 62 -103 92 -42 31 -92 68 -111 82 -218 162 -714 276 -1047 242 -282 -28 -328 -37 -473 -87 -94 -32 -274 -119 -320 -154 -19 -15 -42 -29 -50 -32 -34 -13 -223 -194 -282 -270 -196 -252 -314 -558 -367 -948 -19 -141 -34 -420 -27 -509 4 -49 11 -147 16 -217 43 -578 257 -1024 625 -1303 98 -74 180 -131 189 -131 3 0 39 -15 78 -33 40 -19 96 -41 123 -49 140 -45 184 -57 225 -62 25 -4 91 -13 148 -21 460 -64 914 31 1231 258 73 52 209 187 267 263 96 128 108 117 143 -121 6 -38 21 -128 33 -200 l23 -130 415 0 415 0 3 2509 c2 2001 0 2511 -10 2518 -7 4 -236 8 -508 8 -483 0 -496 -1 -508 -20z m-700 -2120 c143 -36 174 -48 306 -121 95 -52 231 -222 289 -359 79 -188 101 -318 102 -610 1 -514 -151 -818 -490 -978 -37 -18 -72 -32 -78 -32 -7 0 -40 -10 -74 -22 -99 -34 -450 -31 -592 5 -176 46 -300 126 -413 265 -45 55 -122 195 -122 222 0 9 -4 20 -9 26 -65 71 -92 720 -39 944 87 368 283 579 608 650 130 28 415 34 512 10z M18655 7855 c-317 -39 -406 -57 -625 -126 -357 -113 -664 -314 -830 -544 -33 -46 -60 -86 -60 -89 0 -3 -13 -27 -28 -53 -142 -243 -169 -583 -73 -949 61 -234 288 -503 541 -641 30 -17 80 -44 110 -62 164 -94 510 -222 760 -281 89 -21 220 -50 265 -59 28 -6 89 -20 137 -31 48 -11 98 -20 112 -20 14 0 35 -4 48 -9 13 -5 73 -19 133 -31 61 -12 138 -28 173 -36 151 -34 200 -45 247 -55 147 -30 381 -99 453 -134 26 -12 65 -30 87 -40 307 -141 364 -459 115 -650 -51 -39 -171 -105 -192 -105 -4 0 -27 -9 -51 -19 -152 -68 -358 -96 -717 -96 -406 0 -686 34 -855 105 -11 4 -36 14 -55 21 -19 7 -66 31 -105 53 -181 105 -265 254 -268 476 l-2 95 -539 3 c-418 2 -542 -1 -554 -10 -12 -11 -14 -35 -8 -158 17 -367 106 -606 315 -847 144 -166 314 -281 616 -414 31 -13 202 -65 290 -87 135 -35 165 -41 305 -62 74 -11 160 -25 190 -30 144 -26 687 -44 883 -31 422 29 530 44 782 108 55 14 116 29 135 33 143 32 440 171 585 274 99 71 242 210 303 296 25 36 49 67 53 70 8 6 50 90 74 145 9 22 21 49 26 60 16 39 37 111 44 150 4 22 11 54 15 70 28 96 39 369 20 515 -48 364 -270 675 -620 867 -30 16 -71 39 -91 51 -78 44 -106 56 -304 130 -101 38 -364 108 -645 172 -52 12 -111 25 -130 30 -53 12 -218 47 -280 58 -30 6 -100 20 -155 32 -55 11 -122 25 -150 30 -98 19 -251 51 -285 60 -19 5 -73 19 -120 31 -149 37 -218 62 -347 127 -171 84 -235 164 -241 302 -5 98 17 149 96 227 139 137 348 197 777 224 277 17 480 5 710 -41 150 -29 376 -146 453 -234 60 -69 102 -176 102 -261 0 -34 5 -66 12 -73 21 -21 1051 -17 1069 4 18 22 -2 311 -29 414 -86 330 -295 579 -659 784 -124 69 -295 140 -405 167 -100 24 -204 47 -323 70 -266 52 -963 65 -1290 24z M421 7783 c-5 -11 -6 -942 -2 -2388 l6 -2370 557 -3 558 -2 2 982 3 983 1285 -4 c707 -2 1286 -4 1288 -6 1 -1 4 -440 5 -976 l2 -974 558 -3 557 -2 0 2379 c0 1532 -3 2382 -10 2386 -5 3 -251 9 -547 12 -470 5 -540 4 -551 -9 -9 -12 -12 -221 -14 -934 l-3 -919 -725 -3 c-399 -2 -978 0 -1287 4 l-563 6 0 923 0 922 -257 6 c-513 14 -851 9 -862 -10z M7970 6775 c-8 -3 -94 -9 -190 -15 -157 -9 -334 -32 -445 -59 -22 -6 -62 -15 -88 -20 -91 -20 -322 -103 -397 -143 -214 -115 -251 -142 -408 -293 -170 -163 -332 -429 -391 -640 -6 -22 -20 -69 -30 -105 -59 -197 -88 -526 -71 -807 6 -98 15 -200 20 -228 5 -27 14 -79 20 -115 6 -36 20 -94 31 -130 10 -36 24 -83 30 -105 27 -96 129 -319 181 -393 117 -167 250 -309 370 -394 110 -79 344 -208 377 -208 6 0 19 -4 29 -9 34 -18 178 -69 227 -81 28 -6 66 -15 85 -20 38 -10 225 -41 360 -60 57 -8 187 -10 395 -8 325 4 426 15 665 68 52 12 106 24 120 27 14 3 65 21 114 40 49 19 109 41 132 49 136 46 416 236 535 362 75 80 224 276 237 312 3 8 26 60 52 115 25 55 51 118 58 140 6 22 23 76 37 120 45 140 62 245 78 495 13 202 8 432 -13 565 -26 171 -34 207 -72 332 -79 267 -218 502 -399 679 -107 103 -196 175 -265 215 -96 55 -223 118 -264 132 -25 8 -69 25 -98 36 -29 12 -101 33 -160 46 -59 14 -123 30 -142 35 -63 18 -312 49 -435 54 -66 4 -154 8 -195 11 -41 2 -82 2 -90 0z m214 -786 c99 -12 270 -51 326 -76 209 -90 333 -202 418 -378 97 -199 117 -319 117 -690 -1 -281 -2 -297 -43 -480 -52 -229 -226 -453 -422 -542 -109 -49 -215 -83 -258 -83 -17 0 -43 -5 -58 -10 -35 -14 -412 -14 -473 -1 -25 5 -77 17 -116 25 -217 48 -414 186 -520 367 -82 140 -128 323 -145 578 -37 565 94 955 384 1136 205 128 511 187 790 154z M24240 6774 c-52 -5 -230 -34 -270 -44 -83 -21 -186 -52 -202 -61 -10 -5 -23 -9 -29 -9 -25 0 -191 -88 -284 -151 -111 -75 -222 -179 -298 -282 -42 -56 -56 -67 -76 -65 -30 3 -30 5 -61 198 -12 74 -25 155 -30 180 -5 25 -12 63 -15 85 -4 22 -11 46 -17 53 -13 15 -813 18 -822 3 -4 -5 -6 -1115 -6 -2466 0 -1351 2 -2461 6 -2466 9 -16 999 -12 1013 4 8 10 12 252 13 848 3 962 -7 888 104 770 129 -137 366 -291 524 -340 111 -34 172 -50 230 -59 384 -65 665 -47 1018 65 214 67 490 262 633 448 84 108 202 316 224 395 4 14 11 30 15 35 9 13 63 191 85 281 69 291 81 787 27 1189 -14 101 -85 352 -128 451 -9 22 -21 50 -27 64 -21 56 -115 217 -151 261 -11 14 -34 43 -51 65 -94 123 -245 253 -392 335 -86 48 -191 97 -233 108 -25 7 -72 21 -105 31 -33 10 -91 24 -130 30 -38 6 -93 16 -122 21 -108 21 -336 32 -443 23z m75 -855 c92 -20 138 -34 235 -70 86 -33 197 -120 260 -204 139 -186 194 -416 193 -800 -1 -417 -72 -659 -247 -843 -46 -49 -177 -142 -200 -142 -8 0 -18 -4 -21 -10 -8 -13 -123 -44 -242 -65 -118 -21 -367 -16 -463 9 -98 25 -161 47 -196 67 -19 10 -51 28 -71 40 -97 55 -242 220 -289 329 -6 14 -19 43 -29 65 -24 55 -32 83 -60 215 -31 143 -37 549 -10 675 52 249 124 395 256 520 138 131 226 172 494 228 66 14 296 6 390 -14z M28360 6769 c-317 -21 -565 -67 -760 -139 -41 -16 -93 -34 -115 -42 -22 -7 -54 -20 -70 -29 -17 -9 -69 -36 -116 -61 -188 -100 -394 -286 -517 -466 -61 -89 -170 -306 -191 -377 -6 -22 -22 -76 -36 -121 -24 -77 -33 -118 -56 -259 -30 -184 -30 -653 0 -840 6 -33 14 -88 20 -121 9 -63 71 -270 99 -334 126 -291 297 -507 532 -676 101 -72 277 -167 357 -193 32 -10 87 -30 123 -44 36 -14 86 -30 113 -36 26 -6 66 -16 90 -21 45 -11 222 -41 352 -60 98 -15 652 -9 800 9 55 6 145 21 200 32 55 12 118 25 140 29 84 17 192 48 254 74 36 14 69 26 74 26 5 0 57 23 116 52 305 149 518 352 638 608 29 63 36 82 67 181 26 83 47 216 44 281 l-3 63 -504 3 c-535 2 -531 3 -531 -46 0 -68 -62 -212 -122 -284 -103 -123 -286 -218 -523 -270 -80 -17 -468 -17 -551 1 -390 84 -585 240 -684 551 -33 104 -68 314 -57 344 6 14 142 16 1494 18 l1488 3 -2 280 c-2 278 -21 463 -63 618 -36 132 -59 204 -80 252 -10 22 -32 70 -48 107 -38 84 -175 286 -244 358 -48 50 -250 220 -261 220 -3 0 -54 27 -113 60 -59 33 -110 60 -113 60 -3 0 -51 17 -106 39 -55 21 -118 43 -140 49 -201 54 -411 87 -610 96 -71 4 -157 8 -190 10 -33 2 -121 0 -195 -5z m386 -759 c220 -39 270 -57 396 -138 184 -119 299 -320 302 -531 l1 -76 -945 0 -945 0 3 45 c2 25 7 56 11 70 5 14 14 45 22 70 87 304 324 487 724 559 71 12 360 13 431 1z M32920 6774 c-14 -2 -95 -8 -180 -13 -203 -13 -375 -41 -565 -93 -96 -26 -313 -113 -388 -156 -45 -26 -94 -53 -108 -60 -14 -8 -66 -46 -115 -85 -78 -63 -119 -103 -223 -217 -89 -97 -215 -332 -272 -505 -45 -136 -47 -145 -60 -215 -6 -36 -18 -99 -26 -140 -38 -200 -39 -599 -2 -845 40 -262 77 -384 192 -625 89 -186 358 -479 524 -570 159 -88 213 -114 308 -149 189 -70 331 -103 605 -141 260 -37 762 -22 975 29 22 6 65 15 95 22 610 134 1014 482 1172 1009 30 100 64 383 50 413 -2 4 -223 7 -492 7 l-488 0 -11 -72 c-40 -268 -162 -441 -389 -551 -250 -122 -602 -144 -897 -56 -307 92 -516 330 -585 667 -15 72 -40 337 -40 427 0 92 25 360 39 420 85 361 284 587 591 672 220 61 491 63 690 6 47 -14 96 -28 110 -31 120 -33 308 -192 367 -312 35 -71 60 -155 68 -234 3 -28 8 -66 11 -83 l5 -33 510 0 511 0 -5 128 c-11 270 -73 465 -220 685 -189 282 -554 524 -917 607 -319 73 -690 114 -840 94z"/></g></g></svg><small>BY AES</small></a>
+    <ul>
+      <li><a href="#platform">Platform</a></li>
+      <li><a href="#commissioning">Commissioning</a></li>
+      <li><a href="#fdd">Fault detection</a></li>
+      <li><a href="#proof">Proof</a></li>
+      <li><a href="#safety">Safety</a></li>
+    </ul>
+    <a class="btn btn-ghost" href="#contact">Book a walkthrough</a>
+  </div>
+</nav>
+
+<header class="hero" id="top">
+  <div class="wrap">
+    <div>
+      <span class="pill rise"><span class="dot" aria-hidden="true"></span>A clear sightline into every system in your building</span>
+      <h1 class="rise d1">Prove your building <span class="glow">does what it was designed to do.</span></h1>
+      <p class="lede rise d2">HoldSpec connects to your building automation system, tests every sequence against the design, and hands you a signed record of what passed. Then it keeps watching, so your team hears about a stuck damper before anyone calls about a cold room.</p>
+      <div class="ctas rise d3">
+        <a class="btn btn-hot" href="#contact">Book a walkthrough <span aria-hidden="true">→</span></a>
+        <a class="btn btn-ghost" href="#platform">See how it works</a>
+      </div>
+    </div>
+    <div class="stage rise d4" role="img" aria-label="Animated elevation of a building being scanned: units light up as they are verified, a few flag faults.">
+      <div class="stage-bar"><b>Building A</b> · elevation · 3 wings <span class="live"><span class="dot"></span>SCANNING</span></div>
+      <canvas id="elev"></canvas>
+      <div class="readout">
+        <div><span>Verified</span><strong id="r-ver">0</strong></div>
+        <div><span>Needs someone</span><strong id="r-flag" class="bad">0</strong></div>
+        <div><span>Points read</span><strong id="r-pts">0</strong></div>
+      </div>
+      <div class="ticker" aria-hidden="true"><ul id="ticker"></ul></div>
+    </div>
+  </div>
+</header>
+
+<div class="facts">
+  <div class="wrap">
+    <div class="fact"><b>148</b><span>standard functional tests ship installed</span></div>
+    <div class="fact"><b>250+</b><span>fault detection rules ship installed</span></div>
+    <div class="fact"><b>33</b><span>commissioning checklist templates</span></div>
+    <div class="fact"><b>5</b><span>verdicts. A gap is never rounded into a pass.</span></div>
+  </div>
+</div>
+
+<main>
+<section id="platform">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><span class="eyebrow">One platform, two jobs</span><h2>Built right on day one. Kept right every day after.</h2></div>
+      <p class="lede">Most buildings are commissioned once, on paper, and drift from there. HoldSpec does both halves with the same model of your building, so the equipment AES proved at handover is the same equipment your staff watches afterward.</p>
+    </div>
+    <div class="duo">
+      <article class="prod cx" id="commissioning">
+        <span class="tag"><svg class="hs-mark" aria-hidden="true" viewBox="58 46 548 596" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0.000000,700.000000) scale(0.100000,-0.100000)"><path fill="currentColor" d="M777 6516 c-57 -21 -103 -64 -137 -128 -31 -58 -31 -5596 -1 -5656 23 -44 73 -97 116 -120 27 -15 83 -17 545 -17 l515 0 41 27 c53 34 98 89 113 137 7 26 11 165 11 430 l0 391 310 0 310 0 -2 188 -3 187 -305 2 -305 2 -7 801 c-3 440 -3 1160 0 1600 l7 801 305 2 305 2 3 188 2 187 -310 0 -310 0 0 391 c0 265 -4 404 -11 430 -15 48 -60 103 -113 137 l-41 27 -500 2 c-407 2 -507 0 -538 -11z M4880 6521 c-71 -18 -148 -91 -168 -160 -8 -26 -12 -162 -12 -430 l0 -391 -310 0 -310 0 2 -187 3 -188 305 -1 305 -2 2 -587 c2 -323 5 -590 8 -593 3 -3 5 -193 5 -422 0 -229 -2 -419 -5 -422 -3 -3 -6 -270 -8 -593 l-2 -587 -305 -2 -305 -1 -3 -187 -2 -188 310 0 310 0 0 -391 c0 -265 4 -404 11 -430 15 -48 60 -103 113 -137 l41 -27 515 0 c462 0 518 2 545 17 43 23 93 76 116 120 30 59 30 5597 0 5656 -23 44 -73 97 -116 120 -27 15 -84 17 -525 18 -272 1 -506 -1 -520 -5z"/><path fill="#3D9BFF" d="M1990 3971 c-14 -27 -14 -795 0 -822 10 -18 28 -19 669 -19 l658 0 11 25 c17 36 17 774 0 810 l-11 25 -658 0 c-641 0 -659 -1 -669 -19z"/><path fill="#2DD4C0" d="M3333 3982 c-8 -5 -9 -13 -3 -22 6 -9 10 -179 10 -400 0 -221 -4 -391 -10 -400 -6 -9 -5 -17 3 -22 19 -12 1325 -10 1347 2 30 16 30 824 0 840 -22 12 -1328 14 -1347 2z"/></g></svg>HoldSpec Commissioning</span>
+        <h3>Test the sequence, not the sticker.</h3>
+        <p class="sub">AES technicians run HoldSpec on site to exercise each unit's programming and record exactly what it did.</p>
+        <ul>
+          <li><span><b>Automated functional tests</b> for AHUs, RTUs, VAVs, fan coils, chillers, boilers, pumps and more, driven straight through BACnet.</span></li>
+          <li><span><b>Every requirement traced</b> from your sequence of operations to a test and a verdict.</span></li>
+          <li><span><b>Checklists that fill themselves</b> from test results, with the manual items clearly marked.</span></li>
+          <li><span><b>Signed evidence bundles</b> with trends, commands and outcomes for each run.</span></li>
+        </ul>
+        <div class="who">Used by AES commissioning technicians and Cx leads</div>
+      </article>
+      <article class="prod fd" id="fdd">
+        <span class="tag"><svg class="hs-mark" aria-hidden="true" viewBox="58 46 548 596" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0.000000,700.000000) scale(0.100000,-0.100000)"><path fill="currentColor" d="M777 6516 c-57 -21 -103 -64 -137 -128 -31 -58 -31 -5596 -1 -5656 23 -44 73 -97 116 -120 27 -15 83 -17 545 -17 l515 0 41 27 c53 34 98 89 113 137 7 26 11 165 11 430 l0 391 310 0 310 0 -2 188 -3 187 -305 2 -305 2 -7 801 c-3 440 -3 1160 0 1600 l7 801 305 2 305 2 3 188 2 187 -310 0 -310 0 0 391 c0 265 -4 404 -11 430 -15 48 -60 103 -113 137 l-41 27 -500 2 c-407 2 -507 0 -538 -11z M4880 6521 c-71 -18 -148 -91 -168 -160 -8 -26 -12 -162 -12 -430 l0 -391 -310 0 -310 0 2 -187 3 -188 305 -1 305 -2 2 -587 c2 -323 5 -590 8 -593 3 -3 5 -193 5 -422 0 -229 -2 -419 -5 -422 -3 -3 -6 -270 -8 -593 l-2 -587 -305 -2 -305 -1 -3 -187 -2 -188 310 0 310 0 0 -391 c0 -265 4 -404 11 -430 15 -48 60 -103 113 -137 l41 -27 515 0 c462 0 518 2 545 17 43 23 93 76 116 120 30 59 30 5597 0 5656 -23 44 -73 97 -116 120 -27 15 -84 17 -525 18 -272 1 -506 -1 -520 -5z"/><path fill="#3D9BFF" d="M1990 3971 c-14 -27 -14 -795 0 -822 10 -18 28 -19 669 -19 l658 0 11 25 c17 36 17 774 0 810 l-11 25 -658 0 c-641 0 -659 -1 -669 -19z"/><path fill="#2DD4C0" d="M3333 3982 c-8 -5 -9 -13 -3 -22 6 -9 10 -179 10 -400 0 -221 -4 -391 -10 -400 -6 -9 -5 -17 3 -22 19 -12 1325 -10 1347 2 30 16 30 824 0 840 -22 12 -1328 14 -1347 2z"/></g></svg>HoldSpec Fault Detection</span>
+        <h3>Know which room needs someone today.</h3>
+        <p class="sub">After handover, HoldSpec stays on site and reads your system around the clock. It never writes to equipment.</p>
+        <ul>
+          <li><span><b>Campus at a glance</b>: every building, floor and unit painted by fault state on one drawing.</span></li>
+          <li><span><b>Plain-language dockets</b> that say what is wrong, where, and what to check first.</span></li>
+          <li><span><b>Rules tuned on your own history</b> before they switch on, so alerts mean something.</span></li>
+          <li><span><b>Coverage shown honestly</b>: what is watched, what is not, and why.</span></li>
+        </ul>
+        <div class="who">Used by facilities and maintenance staff</div>
+      </article>
+    </div>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><span class="eyebrow acx">A commissioning job, start to finish</span><h2>From first scan to signed handover.</h2></div>
+      <p class="lede">The same five steps on every job. HoldSpec does the repetitive parts and keeps the tech in control of anything that commands equipment.</p>
+    </div>
+    <div class="proc" id="proc">
+      <div class="step" style="--i:0"><span class="n"><b>1</b><small>CONNECT</small></span><h3>Discover</h3><p>Scan the BACnet network, directly or through the Niagara supervisor. Every controller and point is inventoried.</p><div class="rail"><i></i></div></div>
+      <div class="step" style="--i:1"><span class="n"><b>2</b><small>MODEL</small></span><h3>Map</h3><p>Match messy point names to known equipment roles. Teach it once and it applies to every unit of that type.</p><div class="rail"><i></i></div></div>
+      <div class="step" style="--i:2"><span class="n"><b>3</b><small>PLAN</small></span><h3>Rehearse</h3><p>A dry run shows every command HoldSpec would send, and which tests are ready or blocked, before anything moves.</p><div class="rail"><i></i></div></div>
+      <div class="step" style="--i:3"><span class="n"><b>4</b><small>TEST</small></span><h3>Run</h3><p>Overnight, HoldSpec drives each sequence, watches the response, and restores every point it touched.</p><div class="rail"><i></i></div></div>
+      <div class="step" style="--i:4"><span class="n"><b>5</b><small>PROVE</small></span><h3>Hand over</h3><p>Findings go to work orders, retests close them, and the owner receives signed checklists and evidence.</p><div class="rail"><i></i></div></div>
+    </div>
+  </div>
+</section>
+
+<section id="proof" class="band">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><span class="eyebrow">Honest verdicts</span><h2>Five answers. No gray area painted green.</h2></div>
+      <p class="lede">A test that could not run is not a pass. HoldSpec keeps every outcome distinct all the way to the signed report, so owners see what was proven and what is still open.</p>
+    </div>
+    <div class="verdicts">
+      <div class="vlist" id="vlist" role="group" aria-label="Verdicts"></div>
+      <div class="vpanel" id="vpanel" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div><span class="eyebrow">Evidence, not a signature on a form</span><h2>Every verdict carries its receipts.</h2></div>
+      <p class="lede">Each run is sealed with the trend, the commands sent, the limits applied and the code requirement it satisfies. If a result is ever questioned, the data is right there.</p>
+    </div>
+    <div class="evidence">
+      <div class="card">
+        <div class="card-h"><b>Run 548</b> <span class="mono">CH-102</span> · Chilled water supply reset <span class="v v-fail">FAIL</span><span class="ex-tag">Example record</span></div>
+        <div class="chart-wrap"><svg id="evchart" viewBox="0 0 640 260" aria-label="Chart: chilled water supply temperature stays above the 90 second recovery limit"></svg></div>
+        <div class="kv">
+          <div><span>Expected</span><strong>recover &lt; 90 s</strong></div>
+          <div><span>Observed</span><strong class="bad">118.9 s</strong></div>
+          <div><span>Satisfies</span><strong>IECC C408.2.3.1</strong></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><b>Evidence bundle</b> · 7 files</div>
+        <div class="bundle">
+          <div class="file"><i></i><span>manifest.json</span><em>2 KB</em></div>
+          <div class="file"><i></i><span>trend_chws_temp.parquet</span><em>184 KB</em></div>
+          <div class="file"><i></i><span>commands_sent.log</span><em>6 KB</em></div>
+          <div class="file"><i></i><span>baseline_capture.json</span><em>11 KB</em></div>
+          <div class="file"><i></i><span>restore_verify.json</span><em>9 KB</em></div>
+          <div class="file"><i></i><span>assertions.json</span><em>3 KB</em></div>
+          <div class="file"><i></i><span>report.pdf</span><em>212 KB</em></div>
+        </div>
+        <div class="seal"><b>SEALED</b> · sha256 9f2c…e41a · signed by cx.tech · all points restored to prior state</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="band">
+  <div class="wrap">
+    <div class="sec-head">
+      <div><span class="eyebrow fdd">Fault detection, live</span><h2>The whole portfolio on one drawing.</h2></div>
+      <p class="lede">Every unit sits where it lives: building, floor, wing. Red means someone should go look today. Tap any unit to see what HoldSpec would tell your team.</p>
+    </div>
+    <div class="campus-grid">
+      <div class="card">
+        <div class="card-h"><b>Riverbend Portfolio</b> · 3 buildings <span class="ex-tag">Example portfolio</span></div>
+        <div class="campus" id="campus"></div>
+        <div class="legend">
+          <span><i class="lg ok"></i>Running normally</span>
+          <span><i class="lg warn"></i>Watch</span>
+          <span><i class="lg crit"></i>Needs someone today</span>
+          <span><i class="lg off"></i>Not watched yet</span>
+        </div>
+      </div>
+      <div class="card docket" id="docket" aria-live="polite"></div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="wrap">
+    <div class="sec-head">
+      <div><span class="eyebrow">Made for real buildings</span><h2>Fits the systems you already own.</h2></div>
+      <p class="lede">HoldSpec works with the controls AES installs and services, and with the standards your engineers and auditors already cite.</p>
+    </div>
+    <div class="bento">
+      <div class="tile w4">
+        <span class="k acx">Checklists owners can read</span>
+        <h3>Handed over as proof, not a binder of initials.</h3>
+        <p>Items proven by an automated test are locked to that result. Items that need a person say so, with the name of who checked them.</p>
+        <div class="checklist">
+          <div class="ci"><span class="src auto">AUTO</span><span>Economizer opens before mechanical cooling stages</span><span class="v v-pass">PASS</span></div>
+          <div class="ci"><span class="src auto">AUTO</span><span>Unoccupied setback reached within 30 min</span><span class="v v-pass">PASS</span></div>
+          <div class="ci"><span class="src">MANUAL</span><span>Space sensor mounted away from supply diffuser</span><span class="v wait">AWAITING TECH</span></div>
+        </div>
+      </div>
+      <div class="tile w2">
+        <span class="k">Works with</span>
+        <h3>Your existing BAS.</h3>
+        <p>Reads BACnet/IP directly or through a Niagara N4 supervisor. No rip and replace.</p>
+        <div class="chips"><span class="chip">BACnet/IP</span><span class="chip">Niagara N4</span><span class="chip">Honeywell</span><span class="chip">MS/TP via router</span></div>
+      </div>
+      <div class="tile w2">
+        <span class="k">Standards</span>
+        <h3>Cites the code.</h3>
+        <p>Tests and checklists reference the requirements engineers and auditors use.</p>
+        <div class="chips"><span class="chip">ASHRAE Guideline 0</span><span class="chip">Guideline 36</span><span class="chip">90.1</span><span class="chip">IECC C408</span></div>
+      </div>
+      <div class="tile w2">
+        <span class="k">On site</span>
+        <h3>Runs offline.</h3>
+        <p>HoldSpec lives on your network. Building data does not need to leave your site to be useful.</p>
+      </div>
+      <div class="tile w2">
+        <span class="k">Any building type</span>
+        <h3>One platform, every vertical.</h3>
+        <p>Standard libraries cover the equipment common to most commercial and institutional buildings.</p>
+        <div class="chips"><span class="chip">Healthcare</span><span class="chip">Higher ed</span><span class="chip">K-12</span><span class="chip">Office</span><span class="chip">Hospitality</span><span class="chip">Government</span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="safety" class="safety-sec">
+  <div class="wrap">
+    <div class="safety">
+      <div style="display:grid;gap:18px">
+        <span class="eyebrow acx">Safety by design</span>
+        <h2 style="font-size:clamp(32px,4.4vw,56px)">Every command is borrowed, and always given back.</h2>
+        <p class="lede">When HoldSpec tests a unit, each point it commands is taken on a timed lease and journaled. When the test ends, or if anything goes wrong, the point is released and HoldSpec confirms it is back to where it started. Your staff's fault detection view has no way to write to equipment at all.</p>
+      </div>
+      <div class="lease" aria-label="Diagram: three points leased during a test window and released before it closes">
+        <div class="lrow"><span>OA damper</span><div class="lbar"><i style="left:8%;width:38%">leased · 100%</i></div></div>
+        <div class="lrow"><span>Clg stage 1</span><div class="lbar"><i class="hatch" style="left:30%;width:44%">leased · ON</i></div></div>
+        <div class="lrow"><span>Supply fan</span><div class="lbar"><i style="left:14%;width:70%">leased · speed 60%</i></div></div>
+        <div class="lrow"><span>Restore</span><div class="lbar"><i class="ok" style="left:84%;width:16%">verified</i></div></div>
+        <div class="lrow"><span></span><div class="mono axis"><span>test start</span><span>window closes</span></div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section id="contact" class="cta-sec">
+  <div class="wrap cta">
+    <div style="display:grid;gap:22px">
+      <span class="eyebrow">See it on your buildings</span>
+      <h2>Let's walk <span class="glow">one of your buildings</span> through it.</h2>
+      <p class="lede">Your AES team will run HoldSpec read-only against one building, show you the building drawing, and walk through what it finds. Nothing is commanded without your sign-off.</p>
+    </div>
+    <form id="f" novalidate>
+      <label for="f-name">Name<input id="f-name" name="name" autocomplete="name" placeholder="Jordan Ellis" required></label>
+      <label for="f-org">Organization<input id="f-org" name="organization" autocomplete="organization" placeholder="Riverbend Health" required></label>
+      <label for="f-email">Work email<input id="f-email" name="email" type="email" autocomplete="email" placeholder="jellis@riverbend.org" required></label>
+      <label for="f-size">Buildings<select id="f-size" name="size"><option>1 to 3</option><option>4 to 10</option><option>11 or more</option></select></label>
+      <button class="btn btn-hot" type="submit" style="justify-content:center">Request a walkthrough</button>
+      <p class="formnote" id="f-note"></p>
+    </form>
+  </div>
+</section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <span class="foot-brand"><svg class="lockup" viewBox="58 46 4400 666" role="img" aria-label="HoldSpec" xmlns="http://www.w3.org/2000/svg"><g transform="translate(0.000000,700.000000) scale(0.100000,-0.100000)"><path fill="currentColor" d="M777 6516 c-57 -21 -103 -64 -137 -128 -31 -58 -31 -5596 -1 -5656 23 -44 73 -97 116 -120 27 -15 83 -17 545 -17 l515 0 41 27 c53 34 98 89 113 137 7 26 11 165 11 430 l0 391 310 0 310 0 -2 188 -3 187 -305 2 -305 2 -7 801 c-3 440 -3 1160 0 1600 l7 801 305 2 305 2 3 188 2 187 -310 0 -310 0 0 391 c0 265 -4 404 -11 430 -15 48 -60 103 -113 137 l-41 27 -500 2 c-407 2 -507 0 -538 -11z M4880 6521 c-71 -18 -148 -91 -168 -160 -8 -26 -12 -162 -12 -430 l0 -391 -310 0 -310 0 2 -187 3 -188 305 -1 305 -2 2 -587 c2 -323 5 -590 8 -593 3 -3 5 -193 5 -422 0 -229 -2 -419 -5 -422 -3 -3 -6 -270 -8 -593 l-2 -587 -305 -2 -305 -1 -3 -187 -2 -188 310 0 310 0 0 -391 c0 -265 4 -404 11 -430 15 -48 60 -103 113 -137 l41 -27 515 0 c462 0 518 2 545 17 43 23 93 76 116 120 30 59 30 5597 0 5656 -23 44 -73 97 -116 120 -27 15 -84 17 -525 18 -272 1 -506 -1 -520 -5z"/><path fill="#3D9BFF" d="M1990 3971 c-14 -27 -14 -795 0 -822 10 -18 28 -19 669 -19 l658 0 11 25 c17 36 17 774 0 810 l-11 25 -658 0 c-641 0 -659 -1 -669 -19z"/><path fill="#2DD4C0" d="M3333 3982 c-8 -5 -9 -13 -3 -22 6 -9 10 -179 10 -400 0 -221 -4 -391 -10 -400 -6 -9 -5 -17 3 -22 19 -12 1325 -10 1347 2 30 16 30 824 0 840 -22 12 -1328 14 -1347 2z"/></g><g transform="translate(960,0)"><g transform="translate(0.000000,880.000000) scale(0.100000,-0.100000)"><path fill="currentColor" d="M10700 5540 l0 -2520 515 0 515 0 -6 2508 c-3 1379 -7 2513 -10 2520 -3 9 -113 12 -509 12 l-505 0 0 -2520z M15212 8040 c-9 -15 -12 -215 -12 -882 0 -475 0 -871 0 -880 0 -42 -50 -9 -116 77 -15 20 -62 62 -103 92 -42 31 -92 68 -111 82 -218 162 -714 276 -1047 242 -282 -28 -328 -37 -473 -87 -94 -32 -274 -119 -320 -154 -19 -15 -42 -29 -50 -32 -34 -13 -223 -194 -282 -270 -196 -252 -314 -558 -367 -948 -19 -141 -34 -420 -27 -509 4 -49 11 -147 16 -217 43 -578 257 -1024 625 -1303 98 -74 180 -131 189 -131 3 0 39 -15 78 -33 40 -19 96 -41 123 -49 140 -45 184 -57 225 -62 25 -4 91 -13 148 -21 460 -64 914 31 1231 258 73 52 209 187 267 263 96 128 108 117 143 -121 6 -38 21 -128 33 -200 l23 -130 415 0 415 0 3 2509 c2 2001 0 2511 -10 2518 -7 4 -236 8 -508 8 -483 0 -496 -1 -508 -20z m-700 -2120 c143 -36 174 -48 306 -121 95 -52 231 -222 289 -359 79 -188 101 -318 102 -610 1 -514 -151 -818 -490 -978 -37 -18 -72 -32 -78 -32 -7 0 -40 -10 -74 -22 -99 -34 -450 -31 -592 5 -176 46 -300 126 -413 265 -45 55 -122 195 -122 222 0 9 -4 20 -9 26 -65 71 -92 720 -39 944 87 368 283 579 608 650 130 28 415 34 512 10z M18655 7855 c-317 -39 -406 -57 -625 -126 -357 -113 -664 -314 -830 -544 -33 -46 -60 -86 -60 -89 0 -3 -13 -27 -28 -53 -142 -243 -169 -583 -73 -949 61 -234 288 -503 541 -641 30 -17 80 -44 110 -62 164 -94 510 -222 760 -281 89 -21 220 -50 265 -59 28 -6 89 -20 137 -31 48 -11 98 -20 112 -20 14 0 35 -4 48 -9 13 -5 73 -19 133 -31 61 -12 138 -28 173 -36 151 -34 200 -45 247 -55 147 -30 381 -99 453 -134 26 -12 65 -30 87 -40 307 -141 364 -459 115 -650 -51 -39 -171 -105 -192 -105 -4 0 -27 -9 -51 -19 -152 -68 -358 -96 -717 -96 -406 0 -686 34 -855 105 -11 4 -36 14 -55 21 -19 7 -66 31 -105 53 -181 105 -265 254 -268 476 l-2 95 -539 3 c-418 2 -542 -1 -554 -10 -12 -11 -14 -35 -8 -158 17 -367 106 -606 315 -847 144 -166 314 -281 616 -414 31 -13 202 -65 290 -87 135 -35 165 -41 305 -62 74 -11 160 -25 190 -30 144 -26 687 -44 883 -31 422 29 530 44 782 108 55 14 116 29 135 33 143 32 440 171 585 274 99 71 242 210 303 296 25 36 49 67 53 70 8 6 50 90 74 145 9 22 21 49 26 60 16 39 37 111 44 150 4 22 11 54 15 70 28 96 39 369 20 515 -48 364 -270 675 -620 867 -30 16 -71 39 -91 51 -78 44 -106 56 -304 130 -101 38 -364 108 -645 172 -52 12 -111 25 -130 30 -53 12 -218 47 -280 58 -30 6 -100 20 -155 32 -55 11 -122 25 -150 30 -98 19 -251 51 -285 60 -19 5 -73 19 -120 31 -149 37 -218 62 -347 127 -171 84 -235 164 -241 302 -5 98 17 149 96 227 139 137 348 197 777 224 277 17 480 5 710 -41 150 -29 376 -146 453 -234 60 -69 102 -176 102 -261 0 -34 5 -66 12 -73 21 -21 1051 -17 1069 4 18 22 -2 311 -29 414 -86 330 -295 579 -659 784 -124 69 -295 140 -405 167 -100 24 -204 47 -323 70 -266 52 -963 65 -1290 24z M421 7783 c-5 -11 -6 -942 -2 -2388 l6 -2370 557 -3 558 -2 2 982 3 983 1285 -4 c707 -2 1286 -4 1288 -6 1 -1 4 -440 5 -976 l2 -974 558 -3 557 -2 0 2379 c0 1532 -3 2382 -10 2386 -5 3 -251 9 -547 12 -470 5 -540 4 -551 -9 -9 -12 -12 -221 -14 -934 l-3 -919 -725 -3 c-399 -2 -978 0 -1287 4 l-563 6 0 923 0 922 -257 6 c-513 14 -851 9 -862 -10z M7970 6775 c-8 -3 -94 -9 -190 -15 -157 -9 -334 -32 -445 -59 -22 -6 -62 -15 -88 -20 -91 -20 -322 -103 -397 -143 -214 -115 -251 -142 -408 -293 -170 -163 -332 -429 -391 -640 -6 -22 -20 -69 -30 -105 -59 -197 -88 -526 -71 -807 6 -98 15 -200 20 -228 5 -27 14 -79 20 -115 6 -36 20 -94 31 -130 10 -36 24 -83 30 -105 27 -96 129 -319 181 -393 117 -167 250 -309 370 -394 110 -79 344 -208 377 -208 6 0 19 -4 29 -9 34 -18 178 -69 227 -81 28 -6 66 -15 85 -20 38 -10 225 -41 360 -60 57 -8 187 -10 395 -8 325 4 426 15 665 68 52 12 106 24 120 27 14 3 65 21 114 40 49 19 109 41 132 49 136 46 416 236 535 362 75 80 224 276 237 312 3 8 26 60 52 115 25 55 51 118 58 140 6 22 23 76 37 120 45 140 62 245 78 495 13 202 8 432 -13 565 -26 171 -34 207 -72 332 -79 267 -218 502 -399 679 -107 103 -196 175 -265 215 -96 55 -223 118 -264 132 -25 8 -69 25 -98 36 -29 12 -101 33 -160 46 -59 14 -123 30 -142 35 -63 18 -312 49 -435 54 -66 4 -154 8 -195 11 -41 2 -82 2 -90 0z m214 -786 c99 -12 270 -51 326 -76 209 -90 333 -202 418 -378 97 -199 117 -319 117 -690 -1 -281 -2 -297 -43 -480 -52 -229 -226 -453 -422 -542 -109 -49 -215 -83 -258 -83 -17 0 -43 -5 -58 -10 -35 -14 -412 -14 -473 -1 -25 5 -77 17 -116 25 -217 48 -414 186 -520 367 -82 140 -128 323 -145 578 -37 565 94 955 384 1136 205 128 511 187 790 154z M24240 6774 c-52 -5 -230 -34 -270 -44 -83 -21 -186 -52 -202 -61 -10 -5 -23 -9 -29 -9 -25 0 -191 -88 -284 -151 -111 -75 -222 -179 -298 -282 -42 -56 -56 -67 -76 -65 -30 3 -30 5 -61 198 -12 74 -25 155 -30 180 -5 25 -12 63 -15 85 -4 22 -11 46 -17 53 -13 15 -813 18 -822 3 -4 -5 -6 -1115 -6 -2466 0 -1351 2 -2461 6 -2466 9 -16 999 -12 1013 4 8 10 12 252 13 848 3 962 -7 888 104 770 129 -137 366 -291 524 -340 111 -34 172 -50 230 -59 384 -65 665 -47 1018 65 214 67 490 262 633 448 84 108 202 316 224 395 4 14 11 30 15 35 9 13 63 191 85 281 69 291 81 787 27 1189 -14 101 -85 352 -128 451 -9 22 -21 50 -27 64 -21 56 -115 217 -151 261 -11 14 -34 43 -51 65 -94 123 -245 253 -392 335 -86 48 -191 97 -233 108 -25 7 -72 21 -105 31 -33 10 -91 24 -130 30 -38 6 -93 16 -122 21 -108 21 -336 32 -443 23z m75 -855 c92 -20 138 -34 235 -70 86 -33 197 -120 260 -204 139 -186 194 -416 193 -800 -1 -417 -72 -659 -247 -843 -46 -49 -177 -142 -200 -142 -8 0 -18 -4 -21 -10 -8 -13 -123 -44 -242 -65 -118 -21 -367 -16 -463 9 -98 25 -161 47 -196 67 -19 10 -51 28 -71 40 -97 55 -242 220 -289 329 -6 14 -19 43 -29 65 -24 55 -32 83 -60 215 -31 143 -37 549 -10 675 52 249 124 395 256 520 138 131 226 172 494 228 66 14 296 6 390 -14z M28360 6769 c-317 -21 -565 -67 -760 -139 -41 -16 -93 -34 -115 -42 -22 -7 -54 -20 -70 -29 -17 -9 -69 -36 -116 -61 -188 -100 -394 -286 -517 -466 -61 -89 -170 -306 -191 -377 -6 -22 -22 -76 -36 -121 -24 -77 -33 -118 -56 -259 -30 -184 -30 -653 0 -840 6 -33 14 -88 20 -121 9 -63 71 -270 99 -334 126 -291 297 -507 532 -676 101 -72 277 -167 357 -193 32 -10 87 -30 123 -44 36 -14 86 -30 113 -36 26 -6 66 -16 90 -21 45 -11 222 -41 352 -60 98 -15 652 -9 800 9 55 6 145 21 200 32 55 12 118 25 140 29 84 17 192 48 254 74 36 14 69 26 74 26 5 0 57 23 116 52 305 149 518 352 638 608 29 63 36 82 67 181 26 83 47 216 44 281 l-3 63 -504 3 c-535 2 -531 3 -531 -46 0 -68 -62 -212 -122 -284 -103 -123 -286 -218 -523 -270 -80 -17 -468 -17 -551 1 -390 84 -585 240 -684 551 -33 104 -68 314 -57 344 6 14 142 16 1494 18 l1488 3 -2 280 c-2 278 -21 463 -63 618 -36 132 -59 204 -80 252 -10 22 -32 70 -48 107 -38 84 -175 286 -244 358 -48 50 -250 220 -261 220 -3 0 -54 27 -113 60 -59 33 -110 60 -113 60 -3 0 -51 17 -106 39 -55 21 -118 43 -140 49 -201 54 -411 87 -610 96 -71 4 -157 8 -190 10 -33 2 -121 0 -195 -5z m386 -759 c220 -39 270 -57 396 -138 184 -119 299 -320 302 -531 l1 -76 -945 0 -945 0 3 45 c2 25 7 56 11 70 5 14 14 45 22 70 87 304 324 487 724 559 71 12 360 13 431 1z M32920 6774 c-14 -2 -95 -8 -180 -13 -203 -13 -375 -41 -565 -93 -96 -26 -313 -113 -388 -156 -45 -26 -94 -53 -108 -60 -14 -8 -66 -46 -115 -85 -78 -63 -119 -103 -223 -217 -89 -97 -215 -332 -272 -505 -45 -136 -47 -145 -60 -215 -6 -36 -18 -99 -26 -140 -38 -200 -39 -599 -2 -845 40 -262 77 -384 192 -625 89 -186 358 -479 524 -570 159 -88 213 -114 308 -149 189 -70 331 -103 605 -141 260 -37 762 -22 975 29 22 6 65 15 95 22 610 134 1014 482 1172 1009 30 100 64 383 50 413 -2 4 -223 7 -492 7 l-488 0 -11 -72 c-40 -268 -162 -441 -389 -551 -250 -122 -602 -144 -897 -56 -307 92 -516 330 -585 667 -15 72 -40 337 -40 427 0 92 25 360 39 420 85 361 284 587 591 672 220 61 491 63 690 6 47 -14 96 -28 110 -31 120 -33 308 -192 367 -312 35 -71 60 -155 68 -234 3 -28 8 -66 11 -83 l5 -33 510 0 511 0 -5 128 c-11 270 -73 465 -220 685 -189 282 -554 524 -917 607 -319 73 -690 114 -840 94z"/></g></g></svg><span>A clear sightline into every system in your building.</span></span>
+    <span>HoldSpec is a product of Automated Energy Solutions (AES).</span>
+  </div>
+</footer>
+
+<script>
+(function(){
+const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const css = getComputedStyle(document.documentElement);
+const C = n => css.getPropertyValue(n).trim();
+
+/* ---------- Hero elevation canvas ---------- */
+const cv = document.getElementById('elev');
+const ctx = cv.getContext('2d');
+let W=0,H=0,dpr=1, cells=[], t0=performance.now();
+const wings = [ {x:.05,w:.26,floors:2,label:'EAST WING'}, {x:.33,w:.34,floors:3,label:'MAIN'}, {x:.69,w:.26,floors:2,label:'CENTRAL PLANT'} ];
+const kinds = ['VAV','FCU','AHU','RTU','CH','EF','UH'];
+let seed = 7; const rnd = () => (seed = (seed*16807)%2147483647)/2147483647;
+function layout(){
+  const r = cv.getBoundingClientRect();
+  dpr = Math.min(2, window.devicePixelRatio||1);
+  W = r.width; H = r.height;
+  cv.width = Math.round(W*dpr); cv.height = Math.round(H*dpr);
+  ctx.setTransform(dpr,0,0,dpr,0,0);
+  cells = []; seed = 7;
+  const ground = H*.8, fh = H*.17;
+  wings.forEach((wg,wi)=>{
+    const cols = Math.max(4, Math.round(wg.w*W/30));
+    for(let f=0; f<wg.floors; f++){
+      for(let c=0;c<cols;c++){
+        const cw = wg.w*W/cols;
+        const x = wg.x*W + c*cw + 3, y = ground - (f+1)*fh + 6;
+        const roll = rnd();
+        cells.push({x,y,w:cw-6,h:fh-12,state: roll<.05?'fail':roll<.1?'warn':'ok', tag: kinds[Math.floor(rnd()*kinds.length)]+'-'+(wi+1)+(f+1)+String(c+1).padStart(2,'0'), seen:false});
+      }
+    }
+  });
+}
+function draw(now){
+  const T = (now - t0)/1000;
+  ctx.clearRect(0,0,W,H);
+  const ground = H*.8, fh = H*.17;
+  // ground + grid
+  ctx.strokeStyle = C('--s-line'); ctx.lineWidth = 1;
+  for(let gx=0; gx<W; gx+=24){ ctx.beginPath(); ctx.moveTo(gx+.5, ground+6); ctx.lineTo(gx+.5, H); ctx.stroke(); }
+  ctx.strokeStyle = C('--s-dim'); ctx.beginPath(); ctx.moveTo(0,ground+.5); ctx.lineTo(W,ground+.5); ctx.stroke();
+  // wings outlines
+  wings.forEach(wg=>{
+    const x=wg.x*W, w=wg.w*W, top=ground-wg.floors*fh;
+    ctx.fillStyle = C('--s-bg'); ctx.fillRect(x,top,w,wg.floors*fh);
+    ctx.strokeStyle = C('--s-dim'); ctx.strokeRect(x+.5,top+.5,w-1,wg.floors*fh-1);
+    ctx.fillStyle = C('--s-dim'); ctx.font = '600 10px "IBM Plex Mono", monospace';
+    ctx.fillText(wg.label, x, top-8);
+  });
+  // scan beam
+  const period = 7;
+  const p = reduce ? 1.2 : (T % period)/period;
+  const bx = p*1.2*W - .1*W;
+  let ver=0, flag=0;
+  cells.forEach(c=>{
+    const cx = c.x + c.w/2;
+    const scanned = reduce || cx < bx;
+    if(p < .02) c.seen = false;
+    if(scanned && !c.seen){ c.seen = true; if(!reduce) pushTick(c); }
+    let fill, stroke;
+    if(!c.seen){ fill = C('--s-cell'); stroke = C('--s-line'); }
+    else if(c.state==='fail'){ const a = .55+.45*Math.sin(T*5); fill = mix(C('--s-fail'), a); stroke = C('--s-fail'); flag++; }
+    else if(c.state==='warn'){ fill = C('--inc'); stroke = C('--inc'); }
+    else { fill = mix(C('--pass'), .55); stroke = C('--pass'); ver++; }
+    ctx.fillStyle = fill; roundRect(c.x,c.y,c.w,c.h,4); ctx.fill();
+    ctx.strokeStyle = stroke; ctx.lineWidth = 1; ctx.stroke();
+  });
+  if(!reduce && bx>0 && bx<W){
+    const g = ctx.createLinearGradient(bx-120,0,bx,0);
+    g.addColorStop(0,'rgba(0,0,0,0)'); g.addColorStop(1, mix(C('--acx'), .45));
+    ctx.fillStyle = g; ctx.fillRect(bx-120, H*.1, 120, ground-H*.1);
+    ctx.fillStyle = C('--acx-2'); ctx.fillRect(bx-1, H*.08, 2, ground-H*.08+4);
+    ctx.beginPath(); ctx.arc(bx, H*.08, 5, 0, 7); ctx.fill();
+  }
+  // trend line under ground
+  ctx.beginPath();
+  for(let x=0;x<=W;x+=4){
+    const y = ground + 22 + (H-ground-34)*(.5 + .32*Math.sin(x/38 + T*1.4) *Math.cos(x/140 - T*.3));
+    x? ctx.lineTo(x,y) : ctx.moveTo(x,y);
+  }
+  ctx.strokeStyle = C('--acx-2'); ctx.lineWidth = 1.5; ctx.stroke();
+  document.getElementById('r-ver').textContent = ver;
+  document.getElementById('r-flag').textContent = flag;
+  document.getElementById('r-pts').textContent = (ver*14 + Math.floor(p*40)).toLocaleString();
+  if(!reduce) requestAnimationFrame(draw);
+}
+function roundRect(x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();}
+function mix(hex,a){const h=hex.replace('#','');const n=parseInt(h.length===3?h.split('').map(c=>c+c).join(''):h,16);return `rgba(${n>>16&255},${n>>8&255},${n&255},${a})`}
+const tk = document.getElementById('ticker'); let lastTick=0;
+const msgs = {ok:['PASS','v-pass','sequence verified'], warn:['INCONCLUSIVE','v-inc','needs a longer window'], fail:['FAIL','v-fail','did not reach setpoint']};
+function pushTick(c){
+  const now = performance.now(); if(now-lastTick<380 && c.state==='ok') return; lastTick=now;
+  const m = msgs[c.state];
+  const li = document.createElement('li');
+  li.innerHTML = `<span class="v ${m[1]}">${m[0]}</span><span>${c.tag}</span><span style="color:var(--dim)">${m[2]}</span>`;
+  tk.prepend(li); while(tk.children.length>3) tk.lastChild.remove();
+}
+layout();
+if(reduce){ draw(performance.now()); ['fail','ok','warn'].forEach(s=>{const c=cells.find(x=>x.state===s); if(c) pushTick(c);}); }
+else requestAnimationFrame(draw);
+let rt; addEventListener('resize',()=>{clearTimeout(rt); rt=setTimeout(()=>{layout(); if(reduce) draw(performance.now());},120)});
+
+/* ---------- product card glow follows pointer ---------- */
+document.querySelectorAll('.prod').forEach(el=>{
+  el.addEventListener('pointermove',e=>{const r=el.getBoundingClientRect(); el.style.setProperty('--mx',((e.clientX-r.left)/r.width*100)+'%'); el.style.setProperty('--my',((e.clientY-r.top)/r.height*100)+'%');});
+});
+
+/* ---------- process rails ---------- */
+const proc = document.getElementById('proc');
+if('IntersectionObserver' in window){ new IntersectionObserver((es,o)=>{es.forEach(e=>{if(e.isIntersecting){proc.classList.add('run');o.disconnect();}})},{threshold:.35}).observe(proc); } else proc.classList.add('run');
+
+/* ---------- verdicts ---------- */
+const V = [
+  {k:'PASS',c:'--pass',cls:'v-pass',t:'Did what the design says.',d:'The unit responded inside the limits your sequence of operations sets, and HoldSpec has the trend to show it.',ex:'AHU-3 economizer · OA damper 100% before CLG-1 · 42 s after enable'},
+  {k:'FAIL',c:'--fail',cls:'v-fail',t:'Ran, and missed the mark.',d:'The test ran cleanly and the equipment did not meet the requirement. It becomes a finding with the data attached, then a work order, then a retest.',ex:'CH-102 CHWS reset · recovery 118.9 s · limit < 90 s'},
+  {k:'INCONCLUSIVE',c:'--inc',cls:'v-inc',t:'Ran, but the answer is not clear.',d:'Conditions did not let the test decide, such as a mild day for a heating test. HoldSpec says so instead of guessing, and suggests when to try again.',ex:'FCU-114 heating stage 2 · OAT 64 °F · load too low to decide'},
+  {k:'BLOCKED',c:'--blocked',cls:'v-blk',t:'Could not start.',d:'Something the test needs is missing: a point not mapped, a design value not entered, a device offline. HoldSpec names exactly what, so it can be fixed.',ex:'VAV-2-07 airflow test · design max CFM not entered'},
+  {k:'ABORTED',c:'--abort',cls:'v-abt',t:'Stopped for safety.',d:'The test was halted part way, by a tech or by HoldSpec itself, and every point it touched was released and verified back to its prior state.',ex:'RTU-4 cooling · stopped by tech · 3 of 3 points restored'}
+];
+const vl = document.getElementById('vlist'), vp = document.getElementById('vpanel');
+function showV(i){
+  const v = V[i];
+  vl.querySelectorAll('.vbtn').forEach((b,j)=>b.setAttribute('aria-pressed', j===i));
+  vp.style.setProperty('--vc', `var(${v.c})`);
+  vp.innerHTML = `<span class="eyebrow">What this verdict means</span><div class="big">${v.k}</div><p class="lead">${v.t}</p><p>${v.d}</p><div class="ex"><span>example › </span>${v.ex}</div>`;
+}
+V.forEach((v,i)=>{
+  const b = document.createElement('button'); b.className='vbtn'; b.type='button'; b.style.setProperty('--vc',`var(${v.c})`);
+  b.innerHTML = `<span class="v ${v.cls}">${v.k}</span><span class="t">${v.t}</span>`;
+  b.addEventListener('click',()=>{showV(i); stopCycle();});
+  vl.appendChild(b);
+});
+showV(0);
+let vi=0, vt = reduce?null:setInterval(()=>{vi=(vi+1)%V.length; showV(vi)},3800);
+function stopCycle(){ if(vt){clearInterval(vt); vt=null;} }
+vl.addEventListener('pointerenter',stopCycle);
+
+/* ---------- evidence chart ---------- */
+(function(){
+  const s = document.getElementById('evchart'); const NS='http://www.w3.org/2000/svg';
+  const L=48,R=620,T=20,B=220, xmax=180, ymin=42, ymax=56;
+  const X = v=>L+(v/xmax)*(R-L), Y = v=>B-((v-ymin)/(ymax-ymin))*(B-T);
+  const el=(n,a,txt)=>{const e=document.createElementNS(NS,n);for(const k in a)e.setAttribute(k,a[k]);if(txt)e.textContent=txt;s.appendChild(e);return e};
+  [44,48,52,56].forEach(v=>{el('line',{x1:L,x2:R,y1:Y(v),y2:Y(v),stroke:C('--line-solid'),'stroke-width':1}); el('text',{x:L-10,y:Y(v)+4,'text-anchor':'end',fill:C('--dim'),'font-size':11,'font-family':'IBM Plex Mono, monospace'},v+'°F');});
+  [0,30,60,90,120,150,180].forEach(v=>el('text',{x:X(v),y:B+20,'text-anchor':'middle',fill:C('--dim'),'font-size':11,'font-family':'IBM Plex Mono, monospace'},v+'s'));
+  el('rect',{x:L,y:Y(45.5),width:R-L,height:Y(44.5)-Y(45.5),fill:C('--pass'),'fill-opacity':.12});
+  el('text',{x:R,y:Y(45.5)-6,'text-anchor':'end',fill:C('--pass'),'font-size':11,'font-family':'IBM Plex Mono, monospace'},'target 45 ± 0.5 °F');
+  el('line',{x1:X(90),x2:X(90),y1:T,y2:B,stroke:C('--fail'),'stroke-dasharray':'4 4','stroke-width':1.5});
+  el('text',{x:X(90)+6,y:T+12,fill:C('--fail'),'font-size':11,'font-family':'IBM Plex Mono, monospace'},'limit 90 s');
+  const pts=[]; for(let t=0;t<=180;t+=3){ pts.push([t, t<10?45:Math.max(45, 45+ (9.2*(t-10)/18)*Math.exp(-(t-10)/38))]); }
+  const d = pts.map((p,i)=>(i?'L':'M')+X(p[0]).toFixed(1)+' '+Y(p[1]).toFixed(1)).join(' ');
+  el('path',{d:d+` L${X(180)} ${B} L${X(0)} ${B} Z`,fill:C('--acx'),'fill-opacity':.1});
+  const line = el('path',{d,fill:'none',stroke:C('--acx-2'),'stroke-width':2.2,'stroke-linejoin':'round'});
+  el('circle',{cx:X(118.9),cy:Y(45.5),r:5,fill:C('--fail')});
+  el('text',{x:X(118.9)+9,y:Y(45.5)+16,fill:C('--text'),'font-size':11.5,'font-family':'IBM Plex Mono, monospace'},'back in band at 118.9 s');
+  el('text',{x:X(12),y:T+12,fill:C('--muted'),'font-size':11,'font-family':'IBM Plex Mono, monospace'},'setpoint step ↓');
+  if(!reduce && line.getTotalLength){ const len=line.getTotalLength(); line.style.strokeDasharray=len; line.style.strokeDashoffset=len; const io=new IntersectionObserver(es=>{if(es[0].isIntersecting){line.style.transition='stroke-dashoffset 2.2s cubic-bezier(.4,0,.2,1)'; line.style.strokeDashoffset=0; io.disconnect();}},{threshold:.4}); io.observe(s); }
+})();
+
+/* ---------- campus ---------- */
+const campus = document.getElementById('campus'), docket = document.getElementById('docket');
+const faults = {
+  crit:[
+    {rule:'Simultaneous heating and cooling',what:'Hot water valve at 40% while the cooling coil is at 100%. Energy is being spent fighting itself.',do:'Check the heating valve actuator for a stuck or unlinked stroke.',since:'Since 6:40 am today',sig:[72,71,70,69,68,67,66,64,63,62,61,60]},
+    {rule:'Space too warm, occupied',what:'Room has held above 78 °F for 2 hours during occupied hours with the unit at full cooling.',do:'Verify the outdoor air damper is not stuck open on a hot afternoon.',since:'Since 11:15 am today',sig:[72,73,74,75,76,77,78,78,79,79,80,80]},
+    {rule:'Fan commanded on, no airflow',what:'Supply fan has been commanded on for 25 minutes with no proof of flow.',do:'Check the belt and the airflow switch at the unit.',since:'Since 7:05 am today',sig:[0,0,0,0,0,0,0,0,0,0,0,0]}
+  ],
+  warn:[
+    {rule:'Damper drifting from command',what:'Outdoor air damper feedback trails its command by 12% on average this week.',do:'Schedule a damper linkage check on the next PM visit.',since:'For 5 days',sig:[2,3,3,4,5,6,7,8,9,10,11,12]},
+    {rule:'Schedule running past hours',what:'Unit stayed in occupied mode until 9:40 pm on three weeknights.',do:'Confirm whether evening events justify the extended schedule.',since:'3 of the last 5 days',sig:[1,0,1,1,0,1,1,1,0,1,1,1]}
+  ]
+};
+const buildings = [
+  {name:'Riverbend Medical Pavilion', floors:[[14,'2'],[16,'1']]},
+  {name:'Harbor Point Offices', floors:[[12,'2'],[14,'1']]},
+  {name:'Northgate Science Center', floors:[[10,'1']]}
+];
+seed = 41; let first=null;
+buildings.forEach((b,bi)=>{
+  const wrap = document.createElement('div'); wrap.className='bldg';
+  let crit=0, total=0;
+  const floors = document.createElement('div'); floors.className='floors';
+  b.floors.forEach(([n,label])=>{
+    const row=document.createElement('div'); row.className='floor';
+    row.innerHTML=`<span>FL ${label}</span>`;
+    const us=document.createElement('div'); us.className='units';
+    for(let i=0;i<n;i++){
+      const r=rnd(); const st = r<.05?'crit':r<.13?'warn':r<.19?'off':'ok';
+      const u=document.createElement('button'); u.type='button'; u.className='u '+(st==='ok'?'':st);
+      const kind = ['VAV','FCU','FCU','RTU','AHU'][Math.floor(rnd()*5)];
+      const tag = `${kind}-${label}${String(i+1).padStart(2,'0')}`;
+      const pick = st==='crit'||st==='warn' ? faults[st][Math.floor(rnd()*faults[st].length)] : null;
+      u.setAttribute('aria-label', `${b.name}, floor ${label}, ${tag}: ${st==='crit'?'needs someone today':st==='warn'?'watch':st==='off'?'not watched yet':'running normally'}`);
+      const info = {b:b.name, floor:label, tag, st, f:pick, room: 100*Number(label)+i+2};
+      u.addEventListener('click',()=>{campus.querySelectorAll('.u.sel').forEach(x=>x.classList.remove('sel')); u.classList.add('sel'); showDocket(info);});
+      if(st==='crit'){crit++; if(!first) first=[u,info];}
+      if(st!=='off') total++;
+      us.appendChild(u);
+    }
+    row.appendChild(us); floors.appendChild(row);
+  });
+  wrap.innerHTML = `<div class="bldg-h"><b>${b.name}</b><span>${crit? `<span style="color:var(--fail)">${crit} need someone</span> · `:''}${total} watched</span></div>`;
+  wrap.appendChild(floors); campus.appendChild(wrap);
+});
+function spark(vals,color){
+  const w=300,h=72,mx=Math.max(...vals),mn=Math.min(...vals),rg=(mx-mn)||1;
+  const pts=vals.map((v,i)=>[i*(w/(vals.length-1)), h-8-((v-mn)/rg)*(h-20)]);
+  const d=pts.map((p,i)=>(i?'L':'M')+p[0].toFixed(1)+' '+p[1].toFixed(1)).join(' ');
+  const e=pts[pts.length-1];
+  return `<svg class="spark" viewBox="0 0 ${w} ${h}" preserveAspectRatio="none" aria-hidden="true"><path d="${d} L${w} ${h} L0 ${h}Z" fill="${color}" fill-opacity=".12"/><path d="${d}" fill="none" stroke="${color}" stroke-width="2" vector-effect="non-scaling-stroke"/><circle cx="${e[0]}" cy="${e[1]}" r="3.5" fill="${color}"/></svg>`;
+}
+function showDocket(x){
+  if(x.st==='crit'||x.st==='warn'){
+    const col = x.st==='crit'?C('--fail'):C('--inc');
+    docket.innerHTML = `<span class="v sev" style="--pc:${col};color:${x.st==='crit'?'#fff':'#1B1300'}">${x.st==='crit'?'NEEDS SOMEONE TODAY':'WATCH'}</span>
+      <h3>${x.f.rule}</h3>
+      <p style="color:var(--muted)">${x.f.what}</p>
+      <div class="do"><b>DO THIS FIRST</b>${x.f.do}</div>
+      ${spark(x.f.sig,col)}
+      <dl><dt>Unit</dt><dd class="mono">${x.tag}</dd><dt>Where</dt><dd>${x.b}, floor ${x.floor}, room ${x.room}</dd><dt>When</dt><dd>${x.f.since}</dd></dl>`;
+  } else if(x.st==='off'){
+    docket.innerHTML = `<span class="v sev v-blk">NOT WATCHED YET</span><h3>${x.tag} is on the drawing but not watched.</h3><p style="color:var(--muted)">HoldSpec shows gaps instead of hiding them. This unit is missing a mapped sensor, so no rule can run on it yet.</p><div class="do"><b>TO START WATCHING</b>Map the discharge air temperature point for this unit.</div><dl><dt>Where</dt><dd>${x.b}, floor ${x.floor}, room ${x.room}</dd></dl>`;
+  } else {
+    docket.innerHTML = `<span class="v sev v-pass">RUNNING NORMALLY</span><h3>${x.tag} is behaving.</h3><p style="color:var(--muted)">Every rule that applies to this unit is running and none have fired in the last 7 days.</p>${spark([71,71.5,72,71.8,71.6,72,72.2,71.9,71.7,72,71.8,72],C('--fdd'))}<dl><dt>Where</dt><dd>${x.b}, floor ${x.floor}, room ${x.room}</dd><dt>Space temp</dt><dd class="mono">72.0 °F · setpoint 72</dd></dl>`;
+  }
+}
+if(first){ first[0].classList.add('sel'); showDocket(first[1]); }
+
+/* ---------- fade-up once ---------- */
+if(!reduce && 'IntersectionObserver' in window){
+  const els=[...document.querySelectorAll('.sec-head,.duo,.proc,.verdicts,.evidence,.campus-grid,.bento,.safety,.cta')].filter(e=>e.getBoundingClientRect().top>innerHeight);
+  els.forEach(e=>e.classList.add('up','pre'));
+  const io2=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.remove('pre');io2.unobserve(e.target);}}),{threshold:.12});
+  els.forEach(e=>io2.observe(e));
+}
+/* ---------- form ---------- */
+const f=document.getElementById('f'), note=document.getElementById('f-note');
+f.addEventListener('submit',e=>{
+  e.preventDefault();
+  const bad=[...f.querySelectorAll('input')].find(i=>!i.checkValidity());
+  if(bad){ note.className='formnote bad'; note.textContent = bad.type==='email'?'Enter a work email like name@company.com.':'Fill in your '+bad.name+' so we know who to follow up with.'; bad.focus(); return; }
+  note.className='formnote'; note.textContent='Preview only: this form is not connected yet. Nothing was sent.';
+});
+})();
+</script>
+
+</body></html>
